@@ -7,6 +7,6 @@
 
 # 🎄 Advent of Code 2022 🎄
 
-Go to src/dayXX/index.js to check each one of my solutions
+Go to `src/dayXX/index.js` to check each one of my solutions
 
 ✨🎄🎁🎄🎅🎄🎁🎄✨

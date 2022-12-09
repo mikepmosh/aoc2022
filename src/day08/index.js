@@ -1,9 +1,7 @@
 import run from "aocrunner";
+import utils from '../utils/index.js';
 
 const parseInput = (rawInput) => rawInput;
-
-const createMatrixFromInput = (lines) => lines.map(line => line.split('').map(parseFloat));
-const createMatrix = (nbLines, nbColumns, val = 1) => new Array(nbLines).fill(null).map(() => new Array(nbColumns).fill(val));
 
 const computeVisibility = (forest, nbLines, nbColumns, visibilityMap) =>
 {
@@ -18,6 +16,7 @@ const computeVisibility = (forest, nbLines, nbColumns, visibilityMap) =>
     {
       visibilityMap[lineIdx][columnIdx] += (maxheight < forest[lineIdx][columnIdx])? 1 : 0;
       maxheight = Math.max(maxheight, forest[lineIdx][columnIdx]);
+      if (maxheight == 9) break; // Every tree behind the bigger one is hidden.
       columnIdx++;
     }
 
@@ -28,6 +27,7 @@ const computeVisibility = (forest, nbLines, nbColumns, visibilityMap) =>
     {
       visibilityMap[lineIdx][columnIdx] += (maxheight < forest[lineIdx][columnIdx])? 1 : 0;
       maxheight = Math.max(maxheight, forest[lineIdx][columnIdx]);
+      if (maxheight == 9) break; // Every tree behind the bigger one is hidden.
       columnIdx--;
     }
   }
@@ -41,6 +41,7 @@ const computeVisibility = (forest, nbLines, nbColumns, visibilityMap) =>
     {
       visibilityMap[lineIdx][columnIdx] += (maxheight < forest[lineIdx][columnIdx])? 1 : 0;
       maxheight = Math.max(maxheight, forest[lineIdx][columnIdx]);
+      if (maxheight == 9) break; // Every tree behind the bigger one is hidden.
       lineIdx++;
     }
 
@@ -51,26 +52,23 @@ const computeVisibility = (forest, nbLines, nbColumns, visibilityMap) =>
     {
       visibilityMap[lineIdx][columnIdx] += (maxheight < forest[lineIdx][columnIdx])? 1 : 0;
       maxheight = Math.max(maxheight, forest[lineIdx][columnIdx]);
+      if (maxheight == 9) break; // Every tree behind the bigger one is hidden.
       lineIdx--;
     }
   }
 };
-
-const countInMatrix = (matrix, val) => {
-    return matrix.reduce((acc, elem) => acc + elem.reduce((acc, elem) => (val == elem)? acc + 1 : acc, 0), 0);
-}
 
 const part1 = (rawInput) =>
 {
   const input = parseInput(rawInput);
   const inputLines = input.split('\n');
 
-  const forest = createMatrixFromInput(inputLines);
-  const visibilityMap = createMatrix(inputLines.length, inputLines[0].length);
+  const forest = utils.createMatrixFromInput(inputLines);
+  const visibilityMap = utils.createMatrix(inputLines.length, inputLines[0].length, 1);
 
   computeVisibility(forest, inputLines.length, inputLines[0].length, visibilityMap);
 
-  return (inputLines.length * inputLines[0].length) - countInMatrix(visibilityMap, 1);
+  return (inputLines.length * inputLines[0].length) - utils.countInMatrix(visibilityMap, 1);
 };
 
 const computeScenicSolution1 = (forest, nbLines, nbColumns, scenicMap) =>
@@ -184,22 +182,18 @@ const computeScenicSolution2 = (forest, nbLines, nbColumns, scenicMap) =>
   }
 };
 
-const maxInMatrix = (matrix) => {
-    return matrix.reduce((acc, elem) => Math.max(acc, elem.reduce((acc, elem) => Math.max(acc, elem), 0)), 0);
-};
-
 const part2 = (rawInput) =>
 {
   const input = parseInput(rawInput);
   const inputLines = input.split('\n');
 
-  const forest = createMatrixFromInput(inputLines);
-  const scenicMap = createMatrix(inputLines.length, inputLines[0].length);
+  const forest = utils.createMatrixFromInput(inputLines);
+  const scenicMap = utils.createMatrix(inputLines.length, inputLines[0].length, 1);
 
   //computeScenicSolution1(forest, inputLines.length, inputLines[0].length, scenicMap);
   computeScenicSolution2(forest, inputLines.length, inputLines[0].length, scenicMap);
 
-  return maxInMatrix(scenicMap);
+  return utils.maxInMatrix(scenicMap);
 };
 
 run({
