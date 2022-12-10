@@ -36,36 +36,42 @@ const displayState = (rope) => {
 const updateKnotPosition = (rope, idx) => {
   const lineDistance = Math.abs(rope[idx-1].l - rope[idx].l);
   const columnDistance = Math.abs(rope[idx-1].c - rope[idx].c);
-  if (lineDistance > 1 || columnDistance > 1) {
-    if (lineDistance > 1 && columnDistance > 1) {
-      rope[idx].l = (rope[idx-1].l + rope[idx].l) / 2;
-      rope[idx].c = (rope[idx-1].c + rope[idx].c) / 2;
-    }
-    else if (lineDistance > 1) {
-      rope[idx].l = (rope[idx-1].l + rope[idx].l) / 2;
-      rope[idx].c = rope[idx-1].c;
-    }
-    else {
-      rope[idx].c = (rope[idx-1].c + rope[idx].c) / 2;
-      rope[idx].l = rope[idx-1].l;
-    }
+
+  if (lineDistance > 1 && columnDistance > 1) {
+    rope[idx].l = (rope[idx-1].l + rope[idx].l) / 2;
+    rope[idx].c = (rope[idx-1].c + rope[idx].c) / 2;
+    return true;
   }
+
+  if (lineDistance > 1) {
+    rope[idx].l = (rope[idx-1].l + rope[idx].l) / 2;
+    rope[idx].c = rope[idx-1].c;
+    return true;
+  }
+
+  if (columnDistance > 1) {
+    rope[idx].c = (rope[idx-1].c + rope[idx].c) / 2;
+    rope[idx].l = rope[idx-1].l;
+    return true;
+  }
+
+  return false;
 };
 
 const playWithRope = (inputLines, playground, rope) => {
-  const moveKnot = {
-    U: (idx) => rope[idx].l--,
-    D: (idx) => rope[idx].l++,
-    R: (idx) => rope[idx].c++,
-    L: (idx) => rope[idx].c--,
+  const moveHead = {
+    U: () => rope[0].l--,
+    D: () => rope[0].l++,
+    R: () => rope[0].c++,
+    L: () => rope[0].c--,
   };
 
   for(const line of inputLines) {
     const [action, repeat] = line.split(' ');
     for (let counter=0; counter < parseInt(repeat); counter++){
-      moveKnot[action](0);
+      moveHead[action](0);
       for (let idx=1; idx < rope.length; idx++){
-        updateKnotPosition(rope, idx);
+        if (!updateKnotPosition(rope, idx)) break;
       }
       playground[rope[rope.length-1].l][rope[rope.length-1].c] = 1; // flag visited point
     }
