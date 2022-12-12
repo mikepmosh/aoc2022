@@ -24,7 +24,7 @@
  */
 
 const utils = {
-    createMatrixFromInput : (lines) => lines.map(line => line.split('').map(parseFloat)),
+    createMatrixFromInput : (lines, parser = parseFloat) => lines.map(line => line.split('').map(parser)),
     createMatrix : (nbLines, nbColumns, val = 0) => new Array(nbLines).fill(null).map(() => new Array(nbColumns).fill(val)),
     countInMatrix : (matrix, val) => matrix.reduce((acc, elem) => acc + elem.reduce((acc, elem) => (val == elem)? acc + 1 : acc, 0), 0),
     maxInMatrix : (matrix) => matrix.reduce((acc, elem) => Math.max(acc, elem.reduce((acc, elem) => Math.max(acc, elem), 0)), 0),
