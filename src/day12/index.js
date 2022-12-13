@@ -1,13 +1,12 @@
 import run from "aocrunner";
+import utils from '../utils/index.js';
 
 const parseInput = (rawInput) => rawInput;
-import utils from '../utils/index.js';
 
 const travelMap = (map, visited, currentLine, currentColumn, acceptStepFnc, continueFnc = null) => {
   if (!continueFnc || continueFnc(currentLine, currentColumn)) {
     const currentValue = map[currentLine][currentColumn];
-    const currentDistance = visited[currentLine][currentColumn];
-    const newDistance = currentDistance +1;
+    const newDistance = visited[currentLine][currentColumn] +1;
 
     const checkNeighbor = (lineIdx, columnIdx) => {
       if (acceptStepFnc(map[lineIdx][columnIdx], currentValue)) {
@@ -51,7 +50,7 @@ const part1 = (rawInput) => {
   map[startLine][startColumn] = -1;
   map[endLine][endColumn] = 'z'.charCodeAt(0) - 'a'.charCodeAt(0) + 1;
 
-  const visited = utils.createMatrix(nbLines, nbColumns, 99999999);
+  const visited = utils.createMatrix(nbLines, nbColumns, nbLines * nbColumns);
 
   visited[startLine][startColumn] = 0;
 
@@ -77,11 +76,11 @@ const part2 = (rawInput) => {
   map[startLine][startColumn] = 0;
   map[endLine][endColumn] = 'z'.charCodeAt(0) - 'a'.charCodeAt(0) + 1;
 
-  const visited = utils.createMatrix(nbLines, nbColumns, 99999999);
+  const visited = utils.createMatrix(nbLines, nbColumns, nbLines * nbColumns);
 
   visited[endLine][endColumn] = 0;
 
-  let stepsToBestStart = 99999999;
+  let stepsToBestStart = nbLines * nbColumns;
   const acceptStepFnc = (nextElevation, currentElevation) => ((currentElevation - nextElevation) <= 1);
 
   const continueFnc = (currentLine, currentColumn) => {
