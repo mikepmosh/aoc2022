@@ -30,43 +30,38 @@ const computeOpenGeodes = (
   maxRessourceRequired
 ) => {
   const geodeProductionCandidates = [0];
-  for (const ressource of ressourcesTypes) {
-    const bot = blueprint[ressource];
+  for (const botRessource of ressourcesTypes) {
+    const bot = blueprint[botRessource];
 
-    if (ressource != "geode" && (stocks[ressource]?.production + timeout * stocks[ressource]?.factor > (timeout -1) * maxRessourceRequired[ressource])) {
-      // We have enough bot to produce the maximum we can spent of this ressource in the remaining time
-      geodeProductionCandidates.push(stocks["geode"]?.production + timeout * stocks["geode"]?.factor);
+    if (botRessource != "geode" && (stocks[botRessource].production + timeout * stocks[botRessource].factor > (timeout -1) * maxRessourceRequired[botRessource])) {
+      // We have enough bots to produce the maximum we can spent of this ressource in the remaining time
+      geodeProductionCandidates.push(stocks["geode"].production + timeout * stocks["geode"].factor);
     }
     else {
       let newTimeout = timeout;
 
-      const newResources = {};
+      const newStocks = {};
       for (const ressource of ressourcesTypes) {
-        newResources[ressource] = stocks[ressource]?.production || 0;
+        newStocks[ressource] = { ...stocks[ressource] };
       }
 
-      while (newTimeout > 0 && !ressourcesTypes.every((r) => (!bot[r] || bot[r] <= newResources[r]))) {
+      while (newTimeout > 1 && !Object.keys(bot).every((r) => bot[r] <= newStocks[r].production)) {
         for (const ressource of ressourcesTypes) {
-          newResources[ressource] += stocks[ressource]?.factor || 0;
+          newStocks[ressource].production += stocks[ressource].factor;
         }
         newTimeout--;
       }
 
       if (newTimeout > 1) {
+        for (const ressource of Object.keys(bot)) {
+          newStocks[ressource].production -= bot[ressource];
+        }
+        newStocks[botRessource].factor++;
+
         for (const ressource of ressourcesTypes) {
-          newResources[ressource] += stocks[ressource]?.factor || 0;
-          if (bot[ressource]) {
-            newResources[ressource] -= bot[ressource];
-          }
+          newStocks[ressource].production += stocks[ressource].factor;
         }
         newTimeout--;
-
-        const newStocks = {};
-        for (const ressource of ressourcesTypes) {
-          newStocks[ressource] = { factor: stocks[ressource]?.factor || 0 };
-          newStocks[ressource].production = newResources[ressource];
-        }
-        newStocks[ressource].factor++;
 
         geodeProductionCandidates.push(computeOpenGeodes(
           blueprint,
@@ -90,20 +85,15 @@ const part1 = (rawInput) =>
   let qualityLevel = 0;
   for (let index = 0; index < blueprints.length; index++)
   {
+    const stocks = ressourcesTypes.reduce((acc, ressource) => { acc[ressource] = { production: 0, factor: 0 }; return acc; }, {});
+    stocks["ore"].factor++;
     const maxRessourceRequired = {
       ore: Math.max(...ressourcesTypes.map((ressource) => blueprints[index][ressource].ore)),
       clay: blueprints[index]["obsidian"].clay,
       obsidian: blueprints[index]["geode"].obsidian
     };
 
-    qualityLevel += (index + 1) * computeOpenGeodes(
-      blueprints[index],
-      {
-        ore: { factor: 1 }
-      },
-      24,
-      maxRessourceRequired
-    );
+    qualityLevel += (index + 1) * computeOpenGeodes(blueprints[index], stocks, 24, maxRessourceRequired);
   }
 
   return qualityLevel;
@@ -118,20 +108,15 @@ const part2 = (rawInput) =>
   let qualityLevel = 1;
   for (let index = 0; index < Math.min(blueprints.length, 3); index++)
   {
+    const stocks = ressourcesTypes.reduce((acc, ressource) => { acc[ressource] = { production: 0, factor: 0 }; return acc; }, {});
+    stocks["ore"].factor++;
     const maxRessourceRequired = {
       ore: Math.max(...ressourcesTypes.map((ressource) => blueprints[index][ressource].ore)),
       clay: blueprints[index]["obsidian"].clay,
       obsidian: blueprints[index]["geode"].obsidian
     };
 
-    qualityLevel *= computeOpenGeodes(
-      blueprints[index],
-      {
-        ore: { factor: 1 }
-      },
-      32,
-      maxRessourceRequired
-    );
+    qualityLevel *= computeOpenGeodes(blueprints[index], stocks, 32, maxRessourceRequired);
   }
 
   return qualityLevel;
