@@ -5,52 +5,44 @@ const parseInput = (rawInput) => rawInput;
 const mixNumber = (oldIndex, encryptedFile, decryptedFile) =>
 {
   const currentIndex = decryptedFile.indexOf(encryptedFile[oldIndex]);
-  const newIndex = (currentIndex + encryptedFile[oldIndex].value)  % (decryptedFile.length - 1);
+  const newIndex = (currentIndex + encryptedFile[oldIndex].value) % (decryptedFile.length - 1);
 
   decryptedFile.splice(currentIndex, 1);
   decryptedFile.splice(newIndex, 0, encryptedFile[oldIndex]);
 };
 
-const getGroveCoordinates = (decryptedFile) => {
-  let idxOf0 = decryptedFile.indexOf(decryptedFile.find((item) => item.value === 0));
+const getGroveCoordinates = (encryptedFile, decryptedFile) => {
+  const startIndex = decryptedFile.indexOf(encryptedFile.find((elem) => elem.value == 0));
 
-  let sum = 0;
-  for (let i = 1000; i <= 3000; i += 1000) {
-    let groveCoordinate = (i + idxOf0) % decryptedFile.length;
-    sum += decryptedFile[groveCoordinate].value;
-  }
-
-  return sum;
-}
+  return [1000, 2000, 3000].reduce((acc, elem) => (acc + decryptedFile[(startIndex + elem) % decryptedFile.length].value), 0);
+};
 
 const part1 = (rawInput) => {
   const input = parseInput(rawInput);
   const inputLines = input.split('\n');
   const encryptedFile = inputLines.map((line, index) => ({ value: parseFloat(line), index }));
-
   const decryptedFile = [...encryptedFile];
-  for (let i = 0; i < encryptedFile.length; i++) {
-    mixNumber(i, encryptedFile, decryptedFile);
+
+  for (let index = 0; index < encryptedFile.length; index++) {
+    mixNumber(index, encryptedFile, decryptedFile);
   }
 
-  return getGroveCoordinates(decryptedFile);
+  return getGroveCoordinates(encryptedFile, decryptedFile);
 };
 
 const part2 = (rawInput) => {
   const input = parseInput(rawInput);
   const inputLines = input.split('\n');
-  const encryptedFile = inputLines.map((line, index) => ({ value: parseFloat(line), index }));
-
-  encryptedFile.forEach((item) => (item.value *= 811589153));
-
+  const encryptedFile = inputLines.map((line, index) => ({ value: parseFloat(line) * 811589153, index }));
   const decryptedFile = [...encryptedFile];
-  for (let count = 0; count < 10; count++) {
-    for (let i = 0; i < encryptedFile.length; i++) {
-      mixNumber(i, encryptedFile, decryptedFile);
+
+  for (let mixCounter = 0; mixCounter < 10; mixCounter++) {
+    for (let index = 0; index < encryptedFile.length; index++) {
+      mixNumber(index, encryptedFile, decryptedFile);
     }
   }
 
-  return getGroveCoordinates(decryptedFile);
+  return getGroveCoordinates(encryptedFile, decryptedFile);
 };
 
 run({
