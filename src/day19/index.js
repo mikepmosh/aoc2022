@@ -25,26 +25,24 @@ const ressourcesTypes = ["ore", "clay", "obsidian", "geode"];
 
 const computeOpenGeodes = (
   blueprint,
+  maxRequired,
   stocks,
-  timeout,
-  maxRessourceRequired
+  timeout
 ) => {
   const geodeProductionCandidates = [0];
   for (const botRessource of ressourcesTypes) {
-    const bot = blueprint[botRessource];
-
-    if (botRessource != "geode" && (stocks[botRessource].production + timeout * stocks[botRessource].factor > (timeout -1) * maxRessourceRequired[botRessource])) {
+    if (maxRequired[botRessource] && (stocks[botRessource].production + timeout * stocks[botRessource].factor > (timeout -1) * maxRequired[botRessource])) {
       // We have enough bots to produce the maximum we can spent of this ressource in the remaining time
       geodeProductionCandidates.push(stocks["geode"].production + timeout * stocks["geode"].factor);
     }
     else {
-      let newTimeout = timeout;
-
       const newStocks = {};
       for (const ressource of ressourcesTypes) {
         newStocks[ressource] = { ...stocks[ressource] };
       }
 
+      const bot = blueprint[botRessource];
+      let newTimeout = timeout;
       while (newTimeout > 1 && !Object.keys(bot).every((r) => bot[r] <= newStocks[r].production)) {
         for (const ressource of ressourcesTypes) {
           newStocks[ressource].production += stocks[ressource].factor;
@@ -63,12 +61,17 @@ const computeOpenGeodes = (
         }
         newTimeout--;
 
-        geodeProductionCandidates.push(computeOpenGeodes(
-          blueprint,
-          newStocks,
-          newTimeout,
-          maxRessourceRequired
-        ));
+        if (newTimeout < 2) {
+          geodeProductionCandidates.push(newStocks["geode"].production + newTimeout * newStocks["geode"].factor);
+        }
+        else {
+          geodeProductionCandidates.push(computeOpenGeodes(
+            blueprint,
+            maxRequired,
+            newStocks,
+            newTimeout
+          ));
+        }
       }
     }
   }
@@ -87,13 +90,13 @@ const part1 = (rawInput) =>
   {
     const stocks = ressourcesTypes.reduce((acc, ressource) => { acc[ressource] = { production: 0, factor: 0 }; return acc; }, {});
     stocks["ore"].factor++;
-    const maxRessourceRequired = {
+    const maxRequired = {
       ore: Math.max(...ressourcesTypes.map((ressource) => blueprints[index][ressource].ore)),
       clay: blueprints[index]["obsidian"].clay,
       obsidian: blueprints[index]["geode"].obsidian
     };
 
-    qualityLevel += (index + 1) * computeOpenGeodes(blueprints[index], stocks, 24, maxRessourceRequired);
+    qualityLevel += (index + 1) * computeOpenGeodes(blueprints[index], maxRequired, stocks, 24);
   }
 
   return qualityLevel;
@@ -110,13 +113,13 @@ const part2 = (rawInput) =>
   {
     const stocks = ressourcesTypes.reduce((acc, ressource) => { acc[ressource] = { production: 0, factor: 0 }; return acc; }, {});
     stocks["ore"].factor++;
-    const maxRessourceRequired = {
+    const maxRequired = {
       ore: Math.max(...ressourcesTypes.map((ressource) => blueprints[index][ressource].ore)),
       clay: blueprints[index]["obsidian"].clay,
       obsidian: blueprints[index]["geode"].obsidian
     };
 
-    qualityLevel *= computeOpenGeodes(blueprints[index], stocks, 32, maxRessourceRequired);
+    qualityLevel *= computeOpenGeodes(blueprints[index], maxRequired, stocks, 32);
   }
 
   return qualityLevel;
