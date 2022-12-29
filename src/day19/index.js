@@ -22,53 +22,57 @@ const getBlueprints = (inputLines) =>
 };
 
 const ressourcesTypes = ["ore", "clay", "obsidian", "geode"];
-const ressourcesToSpent = ["ore", "clay", "obsidian"];
 
 const computeOpenGeodes = (
   blueprint,
   stocks,
   timeout,
-  limits
+  maxRessourceRequired
 ) => {
   const geodeProductionCandidates = [0];
-  for (const resource of ressourcesTypes) {
-    const bot = blueprint[resource];
-    if (timeout >= limits[resource]) {
+  for (const ressource of ressourcesTypes) {
+    const bot = blueprint[ressource];
+
+    if (ressource != "geode" && (stocks[ressource]?.production + timeout * stocks[ressource]?.factor > (timeout -1) * maxRessourceRequired[ressource])) {
+      // We have enough bot to produce the maximum we can spent of this ressource in the remaining time
+      geodeProductionCandidates.push(stocks["geode"]?.production + timeout * stocks["geode"]?.factor);
+    }
+    else {
       let newTimeout = timeout;
 
       const newResources = {};
-      for (const resource of ressourcesToSpent) {
-        newResources[resource] = stocks[resource].production;
+      for (const ressource of ressourcesTypes) {
+        newResources[ressource] = stocks[ressource]?.production || 0;
       }
 
-      while (newTimeout > 0 && !ressourcesToSpent.every((r) => (!bot[r] || bot[r] <= newResources[r]))) {
-        for (const resource of ressourcesToSpent) {
-          newResources[resource] += stocks[resource].factor;
+      while (newTimeout > 0 && !ressourcesTypes.every((r) => (!bot[r] || bot[r] <= newResources[r]))) {
+        for (const ressource of ressourcesTypes) {
+          newResources[ressource] += stocks[ressource]?.factor || 0;
         }
         newTimeout--;
       }
 
       if (newTimeout > 1) {
-        for (const resource of ressourcesToSpent) {
-          newResources[resource] += stocks[resource].factor;
-          if (bot[resource]) {
-            newResources[resource] -= bot[resource];
+        for (const ressource of ressourcesTypes) {
+          newResources[ressource] += stocks[ressource]?.factor || 0;
+          if (bot[ressource]) {
+            newResources[ressource] -= bot[ressource];
           }
         }
         newTimeout--;
 
         const newStocks = {};
-        for (const resource of ressourcesTypes) {
-          newStocks[resource] = { factor: stocks[resource]["factor"] };
-          newStocks[resource].production = newResources[resource];
+        for (const ressource of ressourcesTypes) {
+          newStocks[ressource] = { factor: stocks[ressource]?.factor || 0 };
+          newStocks[ressource].production = newResources[ressource];
         }
-        newStocks[resource].factor++;
+        newStocks[ressource].factor++;
 
-        geodeProductionCandidates.push((resource == "geode" ? newTimeout : 0) + computeOpenGeodes(
+        geodeProductionCandidates.push(computeOpenGeodes(
           blueprint,
           newStocks,
           newTimeout,
-          limits
+          maxRessourceRequired
         ));
       }
     }
@@ -86,16 +90,19 @@ const part1 = (rawInput) =>
   let qualityLevel = 0;
   for (let index = 0; index < blueprints.length; index++)
   {
+    const maxRessourceRequired = {
+      ore: Math.max(...ressourcesTypes.map((ressource) => blueprints[index][ressource].ore)),
+      clay: blueprints[index]["obsidian"].clay,
+      obsidian: blueprints[index]["geode"].obsidian
+    };
+
     qualityLevel += (index + 1) * computeOpenGeodes(
       blueprints[index],
       {
-        ore: { production: 0, factor: 1 },
-        clay: { production: 0, factor: 0 },
-        obsidian: { production: 0, factor: 0 },
-        geode: { production: 0, factor: 0 }
+        ore: { factor: 1 }
       },
       24,
-      { ore: 16, clay: 9, obsidian: 4, geode: 2 }
+      maxRessourceRequired
     );
   }
 
@@ -111,16 +118,19 @@ const part2 = (rawInput) =>
   let qualityLevel = 1;
   for (let index = 0; index < Math.min(blueprints.length, 3); index++)
   {
+    const maxRessourceRequired = {
+      ore: Math.max(...ressourcesTypes.map((ressource) => blueprints[index][ressource].ore)),
+      clay: blueprints[index]["obsidian"].clay,
+      obsidian: blueprints[index]["geode"].obsidian
+    };
+
     qualityLevel *= computeOpenGeodes(
       blueprints[index],
       {
-        ore: { production: 0, factor: 1 },
-        clay: { production: 0, factor: 0 },
-        obsidian: { production: 0, factor: 0 },
-        geode: { production: 0, factor: 0 }
+        ore: { factor: 1 }
       },
       32,
-      { ore: 24, clay: 13, obsidian: 8, geode: 2 }
+      maxRessourceRequired
     );
   }
 
