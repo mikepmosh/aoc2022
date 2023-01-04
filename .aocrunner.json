@@ -328,29 +328,29 @@
     {
       "part1": {
         "solved": false,
-        "result": null,
+        "result": "245",
         "attempts": [],
-        "time": null
+        "time": 290.1946
       },
       "part2": {
         "solved": false,
-        "result": null,
+        "result": "798",
         "attempts": [],
-        "time": null
+        "time": 318.7021
       }
     },
     {
       "part1": {
         "solved": false,
-        "result": null,
+        "result": "2=0=02-0----2-=02-10",
         "attempts": [],
-        "time": null
+        "time": 0.1902
       },
       "part2": {
         "solved": false,
-        "result": null,
+        "result": "Blender started!",
         "attempts": [],
-        "time": null
+        "time": 0.0212
       }
     }
   ]
